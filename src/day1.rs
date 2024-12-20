@@ -18,7 +18,7 @@ fn parse_r(v: &Vec<Vec<i32>>) -> Vec<i32> {
     v.into_iter().map(|vec| vec[1]).collect::<Vec<_>>()
 } 
 
-pub fn day1() {
+fn part1() {
     let input = read_input("input.txt".to_string());
 
     let as_pairs = input.into_iter().map(|l| {
@@ -44,6 +44,30 @@ pub fn day1() {
 
 }
 
+
+fn part2() {
+    let input = read_input("input.txt".to_string());
+
+    let as_pairs = input.into_iter().map(|l| {
+        let nums = l.split_whitespace().map(|s| {
+            s.parse::<i32>().expect("Couldn't parse {s}")
+        });
+        nums.collect::<Vec<_>>()
+    }).collect();
+        
+    let left = parse_l(&as_pairs);
+    let right = &parse_r(&as_pairs);
+    
+    let similarities = left.into_iter().map(|x| { (x as i64) * right.into_iter().filter(|&v| *v == x).count() as i64 });
+
+    let sum = similarities.sum::<i64>();
+    let _ = dbg!(sum);
+}
+
+pub fn day1() {
+    part1();
+    part2();
+}
 
 //
 // let mut s = String::new();
