@@ -44,7 +44,7 @@ fn part1() {
             }
             possibilities(iter, new_nums)
         } else { last }
-    };
+    }
 
     let possibly_true = equations.into_iter().filter(|(tot, nums)| {
         possibilities(nums.into_iter(), HashSet::new()).into_iter().any(|x| x == *tot)
@@ -80,7 +80,7 @@ fn part2() {
             }
             possibilities(iter, new_nums)
         } else { last }
-    };
+    }
 
     let possibly_true = equations.into_iter().filter(|(tot, nums)| {
         possibilities(nums.into_iter(), HashSet::new()).into_iter().any(|x| x == *tot)
