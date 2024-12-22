@@ -55,7 +55,40 @@ fn part1() {
 
 
 fn part2() {
-    // not yet
+    let input = read_input("input.txt".to_string());
+
+    let numy = input.len();
+    let numx = input[0].len();
+
+    let in_x_range = |x: usize| -> bool { x < numx };
+    let in_y_range = |y: usize| -> bool { y < numy };
+
+    let mut count = 0;
+
+    let str = "XMAS";
+
+    for y in 1 .. numy {
+        for x in 1 .. numx {
+            
+            let left = x - 1;
+            let right = x + 1;
+            let top = y - 1;
+            let bottom = y + 1;
+
+            if input[y].chars().nth(x) == Some('A') &&
+                in_y_range(bottom) &&
+                in_x_range(right) &&
+                ((input[top].chars().nth(left) == Some('M') && input[bottom].chars().nth(right) == Some('S')) || (input[top].chars().nth(left) == Some('S') && input[bottom].chars().nth(right) == Some('M'))) && 
+                ((input[top].chars().nth(right) == Some('M') && input[bottom].chars().nth(left) == Some('S')) || (input[top].chars().nth(right) == Some('S') && input[bottom].chars().nth(left) == Some('M'))) 
+            {
+                count = count + 1
+            }
+            
+    
+        }
+    }
+
+    dbg!(count);
 
 }
 
