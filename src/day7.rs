@@ -56,7 +56,37 @@ fn part1() {
 
 
 fn part2() {
-    // not yet
+    
+    let input = read_input("input.txt".to_string());
+
+    let equations = input.iter().map(|line| equation(&line));
+
+    // Trying a sort of manual fold, just to explore the generics
+    fn possibilities<'a>(mut iter: impl Iterator<Item = &'a i64>, last:HashSet<i64>) -> HashSet<i64> {
+        if let Some(n) = iter.next() {
+            let mut new_nums = HashSet::<i64>::new();
+            if last.is_empty() {
+                new_nums.insert(*n);
+            } else {
+                for x in last {
+                    new_nums.insert(x + *n);
+                    new_nums.insert(x * *n);
+
+                    let mut concat = x.to_string();
+                    concat.push_str(&n.to_string());
+                    let c = concat.parse::<i64>().expect("Couldn't parse concatenation ");
+                    new_nums.insert(c);
+                }
+            }
+            possibilities(iter, new_nums)
+        } else { last }
+    };
+
+    let possibly_true = equations.into_iter().filter(|(tot, nums)| {
+        possibilities(nums.into_iter(), HashSet::new()).into_iter().any(|x| x == *tot)
+    });
+    
+    dbg!(possibly_true.map(|(tot, _)| tot).sum::<i64>());
     
 
 }
