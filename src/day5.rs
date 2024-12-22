@@ -63,7 +63,49 @@ fn part1() {
 
 
 fn part2() {
-   // not yet
+    let input = read_input("input.txt".to_string());
+
+    let rules = &rules(&input);
+    let pages = pages(&input);
+
+    // We meet the rule so long as we don't have both a and b, with b before a (i.e. we just scan and if we hit a check we didn't have b first)
+    fn fails_rule(a:i64, b:i64, pp: &Vec<i64>) -> bool {
+        let mut found_b = false;
+        let violation = pp.into_iter().any (|&x| {
+            if x == b { found_b = true };
+            x == a && found_b
+        });
+
+        violation
+    }
+    
+    let bad_updates = pages.into_iter().filter(|pps| {
+        rules.into_iter().any(|(a, b)| fails_rule(*a, *b, pps))
+    }).collect::<Vec<_>>();
+
+    let resort = |pps: &Vec<i64>| -> Vec<i64> {
+        // For this to be possible, the rules containing numbers that appear must provide a complete ordering
+        let filtered_rules = &rules.into_iter().filter(|(a, b)| pps.into_iter().any(|x| x == a) && pps.into_iter().any(|x| x == b) ).collect::<Vec<_>>();
+
+        // A quick look at the filtered rules suggests we have more rules left than necessary. So, let's try this as a sort_by
+        // dbg![filtered_rules];
+        let mut sorted = pps.clone();
+        sorted.sort_by(|a, b| {
+            if filtered_rules.into_iter().any(|(aa, bb)| {
+                a == aa && b == bb 
+            }) { std::cmp::Ordering::Less } else { std::cmp::Ordering::Greater }
+        });
+
+        sorted
+
+        // vec![]
+    };
+
+    dbg!(bad_updates.into_iter().map(|pps| {
+        let r = resort(&pps);
+        r[r.len() / 2]
+    }).sum::<i64>());
+    
 
 }
 
