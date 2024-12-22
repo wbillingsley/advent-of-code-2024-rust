@@ -65,8 +65,6 @@ fn part2() {
 
     let mut count = 0;
 
-    let str = "XMAS";
-
     for y in 1 .. numy {
         for x in 1 .. numx {
             
