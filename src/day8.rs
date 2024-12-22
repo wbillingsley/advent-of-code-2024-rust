@@ -75,7 +75,52 @@ fn part1() {
 
 
 fn part2() {
-    // Not yet
+    let input = read_input("input.txt".to_string());
+    
+    let x_in_range = |x: i64| -> bool { x >= 0 && x < input[0].len() as i64 };
+    let y_in_range = |y: i64| -> bool { y >= 0 && y < input.len() as i64 };
+    let in_range = |loc: (i64, i64)| -> bool { 
+        let (x, y) = loc;
+        x_in_range(x) && y_in_range(y)
+    };
+
+    let project = |a: &(i64, i64), b: &(i64, i64)| -> Vec<(i64, i64)> {
+        let (x, y) = a;
+        let (xx, yy) = b;
+        let dx = xx - x;
+        let dy = yy - y;
+
+
+        let mut r = Vec::new();
+
+        let mut xxx = *xx;
+        let mut yyy = *yy;
+        while in_range((xxx, yyy)) {
+            r.push((xxx, yyy));
+
+            xxx = xxx + dx;
+            yyy = yyy + dy;
+        }
+
+        r
+    };
+
+    let locations = read_locations(&input);
+
+    let mut antinodes = HashSet::<(i64, i64)>::new();
+
+    locations.into_iter().for_each(|(_, locs)| {
+        for p in &locs {
+            for pp in &locs {
+                if p != pp {
+                    let proj = project(p, pp);
+                    antinodes.extend(proj);
+                }
+            }
+        }
+    });
+
+    dbg!(&antinodes.len());
 
 }
 
