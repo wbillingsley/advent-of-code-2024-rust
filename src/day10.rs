@@ -75,7 +75,41 @@ fn part1() {
 
 
 fn part2() {
-    // Not yet
+
+    let input = read_input("input.txt".to_string());
+    let grid = num_grid(&input);
+    let trailheads = trailheads(&input);
+
+    let directions = vec![(0, -1), (1, 0), (0, 1), (-1, 0)];
+
+    let in_x_range = |x: i64| -> bool { x >= 0 && x < input[0].len() as i64 };
+    let in_y_range = |y: i64| -> bool { y >= 0 && y < input.len() as i64 };
+
+
+    let reachable = |start:(i64, i64)| -> Vec<(i64, i64)> {        
+        let mut locs = Vec::from([start]);
+        
+        for num in 1..10 {
+            let mut new_locs = Vec::new();
+            for (x, y) in locs {
+                for (dx, dy) in &directions {
+                    let xx = x + dx;
+                    let yy = y + dy;
+                    if in_x_range(xx) && in_y_range(yy) && grid[yy as usize][xx as usize] == num {
+                        new_locs.push((xx, yy));
+                    }
+                }                
+            }
+            locs = new_locs;
+        }
+
+        locs
+    };
+
+    let ans = trailheads.into_iter().map(|start| reachable(start).len()).sum::<usize>();
+
+
+    dbg!(ans);
 
 }
 
