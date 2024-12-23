@@ -7,8 +7,9 @@ pub mod day5;
 pub mod day6;
 pub mod day7;
 pub mod day8;
+pub mod day9;
 
 fn main() {
     println!("Hello, world!");
-    day8::day8();
+    day9::day9();
 }
