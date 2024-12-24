@@ -222,7 +222,7 @@ fn part2() {
 }
 
 pub fn day12() {
-    // part1();
+    part1();
     part2();
 }
 
