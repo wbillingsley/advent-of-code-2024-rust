@@ -116,8 +116,6 @@ fn part2() {
 
 
     dbg!(tot);
-    
-    // not yet
 
 }
 
