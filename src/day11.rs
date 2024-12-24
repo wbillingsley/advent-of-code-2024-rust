@@ -18,21 +18,21 @@ fn part1() {
 
     let numbers = input.split_whitespace().map(|s| s.to_string()).collect::<Vec<_>>();
 
-    fn parseBi(s:&str) -> BigUint {
+    fn parse_bi(s:&str) -> BigUint {
         BigUint::parse_bytes(s.as_bytes(), 10).expect("Not an integer")
     }
 
     fn expand(vec:&Vec<String>) -> Vec<String> {
         let mut next = Vec::new();
         for n in vec.into_iter() {
-            let bi = parseBi(n);
+            let bi = parse_bi(n);
             if bi == BigUint::from(0 as u64) {
                 next.push("1".to_string());
             } else if n.len() % 2 == 0 {
                 let l = n.len();
                 let (a, b) = n.split_at(l/2);
-                next.push(parseBi(a).to_string());
-                next.push(parseBi(b).to_string());
+                next.push(parse_bi(a).to_string());
+                next.push(parse_bi(b).to_string());
             } else {                
                 let mult = bi * 2024 as u16;
                 let str = mult.to_string();
