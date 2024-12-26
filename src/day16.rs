@@ -3,6 +3,7 @@ use std::ops;
 use std::rc::Rc;
 use priority_queue::PriorityQueue;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 fn read_input(file_path: String) -> Vec<String> {
     println!("Reading input");
@@ -306,15 +307,86 @@ fn part1() {
 
     dbg!(find_path(&maze));
 
-
-
-
-
 }
 
 fn part2() {
-    
-    // not yet
+    let input = read_input("input.txt".to_string());
+
+    let maze = FloorPlan::from(&input);
+
+    fn find_paths(maze:&FloorPlan) -> Vec<Path> {
+        let mut paths = HashMap::new();
+        let mut queue = PriorityQueue::new(); 
+
+        let mut cursor = Path {
+            directions: Rc::new(List::Nil), 
+            end: maze.start,
+            cost: 0
+        };
+
+        // We're going to need to capture all the paths that lead to the end
+        let mut all_end_paths = Vec::<Path>::new();
+
+        while {
+            if !paths.contains_key(&cursor.end) {
+                paths.insert(cursor.end, cursor.clone());
+            }
+
+            for d in &DIRECTIONS {                
+                if maze.can_move(&(cursor.end), &d) {
+                    let pp = cursor.then(d);
+                    let cost = pp.cost;
+
+                    // Only worth continuing if there isn't another way here that's one turn cheaper
+                    if !paths.contains_key(&pp.end) || (cost >= -1000 + paths.get(&pp.end).unwrap().cost) {
+                        queue.push(pp, cost);
+                    }
+                    
+                }
+            }
+
+            !queue.is_empty() && (all_end_paths.is_empty() || cursor.cost >= all_end_paths.first().unwrap().cost)
+        } {
+            let (next, cost) = queue.pop().expect("Queue was empty");
+
+            if next.end == maze.end && (all_end_paths.is_empty() || cursor.cost >= all_end_paths.first().unwrap().cost) {
+                dbg!("Found a path", next.cost);
+                all_end_paths.push(next.clone());
+            }
+
+            cursor = next;
+        }
+
+        all_end_paths
+    }
+
+    let end_paths = find_paths(&maze);
+    let mut squares = HashSet::new();
+
+    dbg!(end_paths.len());
+    for p in end_paths.iter() {
+        dbg!(stringify!(&p));
+    }
+
+    end_paths.into_iter().for_each(|p| {
+
+        let path_squares = HashSet::new();
+        
+        let (_, mut sqs) = p.directions.fld((maze.start.clone(), path_squares), |(pp, mut sqs), &dir| {
+            let to = pp + dir;
+            sqs.insert(to);
+            (to, sqs)
+        });
+
+        for sq in sqs.drain() {
+            squares.insert(sq);
+        }
+    });
+
+
+
+    dbg!(squares.len() + 1); // Because we haven't counted the start    
+
 }
 
 pub fn day16() {
