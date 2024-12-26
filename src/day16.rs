@@ -39,10 +39,6 @@ const DIRECTIONS: [Direction; 4] = [
 ];
 
 impl Direction {
-    fn inverse(&self) -> Vec2d {
-        Vec2d{ x: -self.x, y: -self.y }
-    }
-
     fn to_char(&self) -> char {
         if *self == DIRECTIONS[0] {
             '^'
@@ -53,16 +49,6 @@ impl Direction {
         } else if *self == DIRECTIONS[3] {
             '<'
         } else { '?' }
-    }
-}
-
-fn parse_command(ch: &char) -> Option<&'static Vec2d> {
-    match ch {
-        '^' => { Some(&DIRECTIONS[0]) },
-        '>' => { Some(&DIRECTIONS[1]) },
-        'v' => { Some(&DIRECTIONS[2]) },
-        '<' => { Some(&DIRECTIONS[3]) },
-        _ => None
     }
 }
 
@@ -184,21 +170,6 @@ enum List<T> {
 }
 
 impl <T> List<T> {
-    fn apply(v:T) -> Rc<List<T>> {
-        Rc::new(
-            List::Cons {
-                item: v, 
-                tail: Rc::new(List::Nil)
-            }
-        )
-    }
-
-    fn is_empty(&self) -> bool {
-        match self {
-            List::Nil => { true },
-            _ => { false }
-        }
-    }
 
     fn head(&self) -> Option<&T> {
         match self {
@@ -292,7 +263,7 @@ fn part1() {
 
             !queue.is_empty() && !paths.contains_key(&maze.end)
         } {
-            let (next, cost) = queue.pop().expect("Queue was empty");
+            let (next, _) = queue.pop().expect("Queue was empty");
             cursor = next;
         }
 
@@ -347,7 +318,7 @@ fn part2() {
 
             !queue.is_empty() && (all_end_paths.is_empty() || cursor.cost >= all_end_paths.first().unwrap().cost)
         } {
-            let (next, cost) = queue.pop().expect("Queue was empty");
+            let (next, _) = queue.pop().expect("Queue was empty");
 
             if next.end == maze.end && (all_end_paths.is_empty() || cursor.cost >= all_end_paths.first().unwrap().cost) {
                 dbg!("Found a path", next.cost);
@@ -364,9 +335,9 @@ fn part2() {
     let mut squares = HashSet::new();
 
     dbg!(end_paths.len());
-    for p in end_paths.iter() {
-        dbg!(stringify!(&p));
-    }
+    // for p in end_paths.iter() {
+    //     dbg!(stringify!(&p));
+    // }
 
     end_paths.into_iter().for_each(|p| {
 
