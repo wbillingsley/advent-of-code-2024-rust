@@ -23,3 +23,4 @@ Day:
 14. `struct`, `impl`, `impl ops`, operator overloading, etc
 15. `Eq, PartialEq` derives. Implementing `::from` for structs. `..` notation, shorthand notation.
 16. `const` arrays, `Rc`, accepting lambdas via `impl Fn`. Uses a home-grown immutable list type as the `Rc` example and fold as the `impl Fn` example.
+17. Part 2 has Rust's bitwise operators.
