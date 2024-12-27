@@ -1,8 +1,6 @@
 use std::fs;
 use std::ops;
 use regex::Regex;
-use std::rc::Rc;
-use priority_queue::PriorityQueue;
 use std::collections::VecDeque;
 
 use std::collections::HashMap;
@@ -42,33 +40,6 @@ const DIRECTIONS: [Direction; 4] = [
     Vec2d { x: -1, y: 0 }
 ];
 
-impl Direction {
-    fn inverse(&self) -> Vec2d {
-        Vec2d{ x: -self.x, y: -self.y }
-    }
-
-    fn to_char(&self) -> char {
-        if *self == DIRECTIONS[0] {
-            '^'
-        } else if *self == DIRECTIONS[1] {
-            '>'
-        } else if *self == DIRECTIONS[2] {
-            'v'
-        } else if *self == DIRECTIONS[3] {
-            '<'
-        } else { '?' }
-    }
-}
-
-fn parse_command(ch: &char) -> Option<&'static Vec2d> {
-    match ch {
-        '^' => { Some(&DIRECTIONS[0]) },
-        '>' => { Some(&DIRECTIONS[1]) },
-        'v' => { Some(&DIRECTIONS[2]) },
-        '<' => { Some(&DIRECTIONS[3]) },
-        _ => None
-    }
-}
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 enum Square {
@@ -76,13 +47,6 @@ enum Square {
 }
 
 impl Square {
-    fn from(c:&char) -> Option<Square> {
-        match c {
-            '#' => { Some(Square::Wall) }
-            '.' => { Some(Square::Blank) }
-            _ => None
-        }
-    }
 
     fn to_char(&self) -> char {
         match self {
@@ -94,8 +58,7 @@ impl Square {
 
 #[derive(Debug)]
 struct FloorPlan {
-    grid: Vec<Vec<Square>>,
-    us: Vec2d
+    grid: Vec<Vec<Square>>
 }
 
 impl FloorPlan {
@@ -120,10 +83,9 @@ impl FloorPlan {
 
     fn new(w:usize, h:usize) -> FloorPlan {
         FloorPlan { 
-            grid: (0..h).map(|y| {
+            grid: (0..h).map(|_| {
                 (0..w).map(|_| Square::Blank).collect::<Vec<_>>()
-            }).collect::<Vec<_>>(),
-            us: Vec2d { x:0, y:0 }
+            }).collect::<Vec<_>>()
         }
     }
 
@@ -162,80 +124,6 @@ impl FloorPlan {
 
 }
 
-
-// Let's try out Rc to create an immutable singly linked list
-// We need to reference count so we can share tails
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-enum List<T> {
-    Nil, 
-    Cons {
-        item: T,
-        tail: Rc<List<T>>
-    }
-}
-
-impl <T> List<T> {
-
-    fn head(&self) -> Option<&T> {
-        match self {
-            List::Nil => { None },
-            List::Cons { item, tail: _ } => Some(item)
-        }
-    }
-
-    fn fld<A> (&self, start:A, f: impl Fn(A, &T) -> A) -> A {
-        match self {
-            List::Nil => { start },
-            List::Cons { item, tail } => { tail.fld(f(start, item), f) }
-        }
-    }
-
-}
-
-fn cons<T>(h: T, tail: Rc<List<T>>) -> Rc<List<T>> {
-    Rc::new(
-        List::Cons {
-            item: h, 
-            tail
-        }
-    )
-}
-
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-struct Path {
-    directions: Rc<List<&'static Direction>>,
-    end: Vec2d,
-    cost: i64
-}
-
-impl Path {
-    fn then(&self, dir: &'static Direction) -> Path {
-        let directions = cons(dir, self.directions.clone());
-        
-        // We make cost negative so we can put it in a priority queue as-is
-        let cost = self.cost + match self.directions.head() {
-            Some(&d) => {
-                if *d == *dir { -1 } else { -1 }
-            },
-            None => { 
-                if *dir == DIRECTIONS[1] { -1 } else { -1 }
-             }
-        };
-
-        let end = self.end + dir; 
-        Path { directions, end, cost }
-    }
-
-    fn stringify_path(&self) -> String {
-        let s = String::new();
-        let ss = self.directions.fld(s, |mut ss, &d| {
-            ss.push(d.to_char());
-            ss
-        });
-        ss
-    }
-
-}
 
 
 
@@ -301,6 +189,68 @@ fn part1() {
 
 fn part2() {
     // not yet
+    let input = read_input("input.txt".to_string());
+    let re = Regex::new(r"([0-9]+)").unwrap();
+
+    let coords:Vec<Vec2d> = input.iter().map(|line| {
+        let arr = re.captures_iter(&line).map(|cap| cap[0].parse::<i64>().expect("Failed to parse coordinate")).collect::<Vec<_>>();
+        Vec2d { x:arr[0], y: arr[1] }        
+    }).collect::<Vec<_>>();
+
+
+    let mut maze = FloorPlan::new(71,71);
+
+    let start = Vec2d { x:0, y: 0};
+    let end = Vec2d { x:70, y: 70};
+
+    fn flood_fill(maze:&FloorPlan, start:&Vec2d, end:&Vec2d) -> Option<i64> {
+        let mut distances = HashMap::new();
+        let mut queue = VecDeque::new(); 
+
+        let mut cursor = (*start, 0 as i64);
+
+        let pic = maze.picture();
+        println!("{pic}");
+
+        while {
+            let (p, cost) = cursor;
+            distances.insert(p, cost);        
+
+            for d in &DIRECTIONS {                
+                if maze.can_move(&p, &d) && !distances.contains_key(&(p + &d)) && !queue.contains(&(p + &d, cost + 1))  {                    
+                    queue.push_back((p + &d, cost + 1));
+                }
+            }
+
+            !queue.is_empty() && !distances.contains_key(end)
+        } {
+            let next = queue.pop_front().expect("Queue was empty");
+            cursor = next;
+        }
+
+        let cheapest = distances.get(end);
+        cheapest.copied()
+
+    }    
+
+    let mut i = 0;
+    for p in coords.iter() {
+        maze.corrupt(&p);
+
+        if let Some(_) = flood_fill(&maze, &start, &end) {
+            i = i + 1;
+            if i % 100 == 0 {
+                dbg!(i);
+            }
+        } else {
+            dbg!("Found it", p);
+            return ();
+        }
+    }
+
+    dbg!(flood_fill(&maze, &start, &end));
+
+
 }
 
 pub fn day18() {
