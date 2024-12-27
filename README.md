@@ -24,3 +24,5 @@ Day:
 15. `Eq, PartialEq` derives. Implementing `::from` for structs. `..` notation, shorthand notation.
 16. `const` arrays, `Rc`, accepting lambdas via `impl Fn`. Uses a home-grown immutable list type as the `Rc` example and fold as the `impl Fn` example.
 17. Part 2 has Rust's bitwise operators.
+18. (not a lot extra in this one)
+19. Slice of a vec
