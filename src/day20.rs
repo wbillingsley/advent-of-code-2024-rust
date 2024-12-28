@@ -1,6 +1,5 @@
 use std::fs;
 use std::ops;
-use regex::Regex;
 use std::collections::VecDeque;
 
 use std::collections::HashMap;
@@ -85,13 +84,6 @@ impl FloorPlan {
 
     fn in_range(&self, p:&Vec2d) -> bool {
         p.x >= 0 && p.x < self.width() as i64 && p.y >= 0 && p.y < self.height() as i64
-    }
-
-    fn corrupt(&mut self, p:&Vec2d) -> bool {
-        if self.in_range(p) {
-            self.grid[p.y as usize][p.x as usize] = Square::Wall;
-            true
-        } else { false }
     }
 
     fn find(&self, target:&Square) -> Option<Vec2d> {
@@ -215,8 +207,62 @@ fn part1() {
 
 
 fn part2() {
-    // not yet
-    
+    let input = read_input("input.txt".to_string());
+    let maze = FloorPlan::from(&input);
+
+    fn flood_fill(maze:&FloorPlan, start:&Vec2d, end:&Vec2d) -> HashMap<Vec2d, i64> {
+        let mut distances = HashMap::new();
+        let mut queue = VecDeque::new(); 
+
+        let mut cursor = (*start, 0 as i64);
+
+        let pic = maze.picture();
+        println!("{pic}");
+
+        while {
+            let (p, cost) = cursor;
+            distances.insert(p, cost);        
+
+            for d in &DIRECTIONS {                
+                if maze.can_move(&p, &d) && !distances.contains_key(&(p + &d)) && !queue.contains(&(p + &d, cost + 1))  {                    
+                    queue.push_back((p + &d, cost + 1));
+                }
+            }
+
+            !queue.is_empty() && !distances.contains_key(end)
+        } {
+            let next = queue.pop_front().expect("Queue was empty");
+            cursor = next;
+        }
+
+        distances
+
+    }      
+
+    let distances = flood_fill(&maze, &maze.start, &maze.end);
+
+    let delta = 100;
+    let cheat_length = 20;
+
+    // This is equivalent to counting the number of squares less that cheat_length manhattan distance away
+    // that have a distance value >= than delta + manhattan distance.
+    let num_cheats = distances.keys().map(|sq| {
+        (-cheat_length..cheat_length + 1).map(|dy: i64| {
+            let max_x:i64 = cheat_length - dy.abs();
+            (-max_x..max_x+1).filter(|&dx| {
+                let to = *sq + &Vec2d { x: dx, y: dy };                
+                let a = distances.get(sq).expect("Huh, a key had no get");
+                if let Some(b) = distances.get(&to) {                    
+                    let saving = b - a - dx.abs() - dy.abs();
+                    saving >= delta
+                } else { false }
+            }).count()
+        }).sum::<usize>()
+    }).sum::<usize>();
+
+    dbg!(num_cheats);
+
+
 }
 
 pub fn day20() {
