@@ -1,5 +1,6 @@
 use std::fs;
 use std::collections::HashSet;
+use std::collections::HashMap;
 
 fn read_input(file_path: String) -> Vec<String> {
     println!("Reading input");
@@ -48,8 +49,47 @@ fn part1() {
 }
 
 
+
 fn part2() {
-    // Not yet
+    let input = read_input("input.txt".to_string());
+
+    let towels = input[0].split(", ").collect::<Vec<_>>();
+
+    let desired = &input[2..];
+
+
+    let mut memo:HashMap<String, usize> = HashMap::new();
+
+    fn count_arrangements(design:&str, towels:&Vec<&str>, memo: &mut HashMap<String, usize>) -> usize {
+        if design.is_empty() { 1 } else {
+            towels.into_iter().map(|&t| {
+                if design.starts_with(t) {
+
+                    let rem = design[t.len()..].to_string();
+                    
+                    match memo.get(&rem) {
+                        Some(&n) => {                             
+                            n 
+                        } 
+                        _ => {
+                            let c = count_arrangements(&design[t.len()..], towels, memo);
+                            memo.insert(rem, c);
+                            c
+                        } 
+                    }
+                } else { 0 }
+            }).sum::<usize>()
+        }
+    }
+
+    let ans:usize = desired.iter().enumerate().map(|(i, design)| {
+        dbg!(i);
+        count_arrangements(design, &towels, &mut memo)
+    }).sum();
+
+    dbg!("Ans", ans);
+    
+    
 }
 
 pub fn day19() {
